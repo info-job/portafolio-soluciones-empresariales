@@ -1,0 +1,913 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A financial transaction (income or expense)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "type": { "type": "string", "enum": ["INCOME", "EXPENSE"] },
+        "documentType": { "type": "string" },
+        "documentNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "invoiceDate": { "type": "string" },
+        "user": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "supplierId": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "supplierTaxId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "accountCode": { "type": "string" },
+        "insuranceCompany": { "type": "string", "enum": ["VIDA", "GENERALES"] },
+        "workOrderId": { "type": "string" },
+        "subCategory": { "type": "string" },
+        "metadata": { "type": "object" },
+        "syncedAt": { "type": "object" }
+      },
+      "required": ["id", "description", "amount", "category", "type", "date", "user", "timestamp"]
+    },
+    "AuditEntry": {
+      "title": "AuditEntry",
+      "description": "A log of system actions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string", "enum": ["CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "BACKUP", "SYNC", "REBUILD"] },
+        "user": { "type": "string" },
+        "entityType": { "type": "string", "enum": ["PROVEEDOR", "TRANSACCION", "ORDEN_TRABAJO", "OFICIO", "PROPIEDAD", "CONTRATO", "SISTEMA", "CUENTA_CONTABLE"] },
+        "entityId": { "type": "string" },
+        "entityName": { "type": "string" },
+        "newValue": { "type": "string" },
+        "oldValue": { "type": "string" },
+        "fieldChanged": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "action", "user", "entityType", "entityId", "timestamp"]
+    },
+    "DueDiligenceReport": {
+      "title": "DueDiligenceReport",
+      "description": "A due diligence report for a supplier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "supplierTaxId": { "type": "string" },
+        "date": { "type": "string" },
+        "riskLevel": { "type": "string" },
+        "analyst": { "type": "string" },
+        "summary": { "type": "string" },
+        "backgroundCheck": { "type": "string" },
+        "financialAnalysis": { "type": "string" },
+        "legalStatus": { "type": "string" },
+        "reputationCheck": { "type": "string" },
+        "findings": { "type": "array", "items": { "type": "string" } },
+        "recommendations": { "type": "string" },
+        "status": { "type": "string", "enum": ["BORRADOR", "FINALIZADO"] },
+        "attachments": { "type": "array", "items": { "type": "string" } },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "supplierId", "supplierName", "date", "riskLevel", "status"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "A supplier record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "folio": { "type": "string" },
+        "taxId": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "taxDocumentType": { "type": "string" },
+        "requestDate": { "type": "string" },
+        "contactName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "bankName": { "type": "string" },
+        "accountType": { "type": "string" },
+        "accountNumber": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "BLOCKED", "PENDING_APPROVAL", "REJECTED"] },
+        "rejectionReason": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "approver": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "dueDiligenceDate": { "type": "string" },
+        "dueDiligenceRisk": { "type": "string" },
+        "folderUrl": { "type": "string" },
+        "isAssigned": { "type": "boolean" },
+        "assignedToEntity": { "type": "string" },
+        "confidenceScore": { "type": "number" },
+        "complianceRequirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string" },
+              "name": { "type": "string" },
+              "status": { "type": "string" },
+              "documentUrl": { "type": "string" },
+              "documentName": { "type": "string" },
+              "lastUpdate": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["id", "taxId", "name", "status", "timestamp"]
+    },
+    "Property": {
+      "title": "Property",
+      "description": "A property record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "building": { "type": "string" },
+        "floor": { "type": "string" },
+        "address": { "type": "string" },
+        "commune": { "type": "string" },
+        "type": { "type": "string" },
+        "owner": { "type": "string" },
+        "propertyRole": { "type": "string" },
+        "surfaceAreaLand": { "type": "number" },
+        "surfaceAreaBuilt": { "type": "number" },
+        "constructionYear": { "type": "number" },
+        "destination": { "type": "string" },
+        "useType": { "type": "string" },
+        "appraisalValue": { "type": "number" },
+        "rentalAmount": { "type": "number" },
+        "lastAppraisalDate": { "type": "string" },
+        "appraisalDocumentUrl": { "type": "string" },
+        "appraisalDocumentName": { "type": "string" },
+        "validationErrors": { "type": "array", "items": { "type": "string" } },
+        "rawMetadata": { "type": "object" },
+        "insurancePolicy": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "policyNumber": { "type": "string" },
+            "insuranceCompany": { "type": "string" },
+            "startDate": { "type": "string" },
+            "endDate": { "type": "string" },
+            "documentUrl": { "type": "string" },
+            "coverageAmount": { "type": "number" },
+            "status": { "type": "string" },
+            "observations": { "type": "string" }
+          }
+        },
+        "financialData": {
+          "type": "object",
+          "properties": {
+            "acquisitionCostCLP": { "type": "number" },
+            "acquisitionCostUF": { "type": "number" },
+            "acquisitionDate": { "type": "string" },
+            "usefulLifeMonths": { "type": "number" },
+            "residualValueCLP": { "type": "number" },
+            "accumulatedDepreciationCLP": { "type": "number" },
+            "lastDepreciationDate": { "type": "string" },
+            "currentBookValueCLP": { "type": "number" },
+            "ufAtAcquisition": { "type": "number" }
+          }
+        }
+      },
+      "required": ["id", "code", "building"]
+    },
+    "MaintenanceExpediente": {
+      "title": "MaintenanceExpediente",
+      "description": "A maintenance file for a property",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyLabel": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDIENTE", "EN_PROCESO", "DETENIDO", "FINALIZADO"] },
+        "priority": { "type": "string", "enum": ["BAJA", "MEDIA", "ALTA", "CRÍTICA"] },
+        "category": { "type": "string", "enum": ["REPARACIÓN", "MANTENCIÓN", "EMERGENCIA"] },
+        "requestDate": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "assignedTo": { "type": "string" },
+        "estimatedCost": { "type": "number" },
+        "actualCost": { "type": "number" }
+      },
+      "required": ["id", "propertyId", "title", "status"]
+    },
+    "Contract": {
+      "title": "Contract",
+      "description": "A contract with a supplier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "building": { "type": "string" },
+        "floor": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "monthlyAmount": { "type": "number" },
+        "summary": { "type": "string" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "accountCode": { "type": "string" }
+      },
+      "required": ["id", "supplierId", "supplierName", "startDate", "endDate", "monthlyAmount", "status"]
+    },
+    "OfficialDocument": {
+      "title": "OfficialDocument",
+      "description": "An official document (incoming or outgoing)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["ENTRANTE", "SALIENTE"] },
+        "docNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "arrivalDate": { "type": "string" },
+        "systemLoadDate": { "type": "string" },
+        "subject": { "type": "string" },
+        "synthesis": { "type": "string" },
+        "repairAddress": { "type": "string" },
+        "status": { "type": "string" },
+        "statusUpdatedAt": { "type": "number" },
+        "managementType": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "responseDocNumber": { "type": "string" },
+        "responseDate": { "type": "string" },
+        "sender": { "type": "string" },
+        "recipient": { "type": "string" },
+        "relatedDocId": { "type": "string" },
+        "attachments": { "type": "array", "items": { "type": "string" } },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "confidenceScore": { "type": "number" },
+        "accountCode": { "type": "string" }
+      },
+      "required": ["id", "type", "docNumber", "date", "subject", "status"]
+    },
+    "ITTicket": {
+      "title": "ITTicket",
+      "description": "An IT support ticket",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "folio": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "priority": { "type": "string" },
+        "status": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "requester": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "resolution": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "folio", "title", "category", "priority", "status", "requester"]
+    },
+    "WorkOrder": {
+      "title": "WorkOrder",
+      "description": "A work order for a supplier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "folio": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "preparedBy": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "supplierTaxId": { "type": "string" },
+        "quoteNumber": { "type": "string" },
+        "requestDate": { "type": "string" },
+        "reqDept": { "type": "string" },
+        "deliveryDate": { "type": "string" },
+        "paymentTerms": { "type": "string" },
+        "deliveryAddress": { "type": "string" },
+        "subtotal": { "type": "number" },
+        "iva": { "type": "number" },
+        "total": { "type": "number" },
+        "specialInstructions": { "type": "string" },
+        "status": { "type": "string" },
+        "authorizedBy": { "type": "string" },
+        "authorizationDate": { "type": "string" },
+        "receptionDate": { "type": "string" },
+        "receptionUser": { "type": "string" },
+        "receptionInvoiceNumber": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "propertyId": { "type": "string" },
+        "propertyLabel": { "type": "string" },
+        "accountCode": { "type": "string" },
+        "confidenceScore": { "type": "number" },
+        "trackingResponsible": { "type": "string" }
+      },
+      "required": ["id", "folio", "issueDate", "supplierName", "total", "status"]
+    },
+    "B13Report": {
+      "title": "B13Report",
+      "description": "A CMF B13 report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "period": { "type": "string" },
+        "insuranceCompany": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "period", "insuranceCompany", "uploadDate"]
+    },
+    "B4Report": {
+      "title": "B4Report",
+      "description": "A CMF B4 report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "period": { "type": "string" },
+        "insuranceCompany": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "period", "insuranceCompany", "uploadDate"]
+    },
+    "Note14Report": {
+      "title": "Note14Report",
+      "description": "A Note 14 report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "period": { "type": "string" },
+        "insuranceCompany": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "period", "insuranceCompany", "uploadDate"]
+    },
+    "AccountingReconciliation": {
+      "title": "AccountingReconciliation",
+      "description": "An accounting reconciliation report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "period": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "fileName": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "period", "uploadDate", "fileName"]
+    },
+    "PettyCash": {
+      "title": "PettyCash",
+      "description": "A petty cash fund",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "responsible": { "type": "string" },
+        "initialBalance": { "type": "number" },
+        "currentBalance": { "type": "number" },
+        "status": { "type": "string", "enum": ["OPEN", "CLOSED"] },
+        "createdAt": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "name", "responsible", "initialBalance", "currentBalance", "status"]
+    },
+    "PettyCashExpense": {
+      "title": "PettyCashExpense",
+      "description": "An expense from a petty cash fund",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "pettyCashId": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "supplierName": { "type": "string" },
+        "supplierTaxId": { "type": "string" },
+        "documentNumber": { "type": "string" },
+        "documentType": { "type": "string" },
+        "accountCode": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "pettyCashId", "date", "description", "amount", "category"]
+    },
+    "LeaseContract": {
+      "title": "LeaseContract",
+      "description": "A lease contract for a property",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyLabel": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "tenantTaxId": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "monthlyAmount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["CLP", "UF"] },
+        "status": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "period": { "type": "string" },
+              "amountPaid": { "type": "number" },
+              "date": { "type": "string" },
+              "paymentMethod": { "type": "string" },
+              "referenceNumber": { "type": "string" },
+              "registeredBy": { "type": "string" },
+              "timestamp": { "type": "number" }
+            },
+            "required": ["id", "period", "amountPaid", "date", "paymentMethod", "registeredBy", "timestamp"]
+          }
+        }
+      },
+      "required": ["id", "propertyId", "tenantName", "startDate", "endDate", "monthlyAmount", "status"]
+    },
+    "Appraisal": {
+      "title": "Appraisal",
+      "description": "A property appraisal report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyRole": { "type": "string" },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": { "type": "string" },
+              "valueCLP": { "type": "number" },
+              "valueUF": { "type": "number" },
+              "landValueCLP": { "type": "number" },
+              "landValueUF": { "type": "number" },
+              "builtValueCLP": { "type": "number" },
+              "builtValueUF": { "type": "number" },
+              "surfaceAreaLand": { "type": "number" },
+              "surfaceAreaBuilt": { "type": "number" }
+            }
+          }
+        },
+        "address": { "type": "string" },
+        "commune": { "type": "string" },
+        "appraiserName": { "type": "string" },
+        "appraisalDate": { "type": "string" },
+        "marketValueCLP": { "type": "number" },
+        "marketValueUF": { "type": "number" },
+        "landValueCLP": { "type": "number" },
+        "builtValueCLP": { "type": "number" },
+        "surfaceAreaLand": { "type": "number" },
+        "surfaceAreaBuilt": { "type": "number" },
+        "documentUrl": { "type": "string" },
+        "documentName": { "type": "string" },
+        "status": { "type": "string", "enum": ["VIGENTE", "VENCIDA", "OBSOLETA", "PENDIENTE"] },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "confidenceScore": { "type": "number" },
+        "extractedData": { "type": "object" }
+      },
+      "required": ["id", "address", "commune", "appraiserName", "appraisalDate", "marketValueCLP", "status"]
+    },
+    "AccountingAccount": {
+      "title": "AccountingAccount",
+      "description": "An accounting account in the chart of accounts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["ACTIVO", "PASIVO", "PATRIMONIO", "INGRESOS", "EGRESOS"] },
+        "subType": { "type": "string" },
+        "level": { "type": "number" },
+        "parentCode": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "code", "name", "type", "level"]
+    },
+    "PropertyImportDraft": {
+      "title": "PropertyImportDraft",
+      "description": "A draft of a property import session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fileName": { "type": "string" },
+        "sheetName": { "type": "string" },
+        "headers": { "type": "array", "items": { "type": "string" } },
+        "rows": { "type": "array", "items": { "type": "array", "items": { "type": "any" } } },
+        "mapping": { "type": "object" },
+        "timestamp": { "type": "number" },
+        "userCreator": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "COMPLETED"] }
+      },
+      "required": ["id", "fileName", "headers", "rows", "timestamp", "userCreator", "status"]
+    },
+    "SecurityDeposit": {
+      "title": "SecurityDeposit",
+      "description": "A rental security deposit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "contractId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyLabel": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "initialAmount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["CLP", "UF"] },
+        "depositDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["RESGUARDADA", "EN_LIQUIDACION", "LIQUIDADA"] },
+        "settlement": { "type": "object" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "contractId", "tenantName", "initialAmount", "status"]
+    },
+    "ReportTemplate": {
+      "title": "ReportTemplate",
+      "description": "A reference template for B13/B4 reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "reportType": { "type": "string", "enum": ["B13", "B4"] },
+        "description": { "type": "string" },
+        "records": { "type": "array", "items": { "type": "object" } },
+        "headers": { "type": "array", "items": { "type": "string" } },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "name", "reportType", "records"]
+    },
+    "ReportReview": {
+      "title": "ReportReview",
+      "description": "A review session of a report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "period": { "type": "string" },
+        "reportType": { "type": "string", "enum": ["B13", "B4"] },
+        "insuranceCompany": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "REVIEWED", "APPROVED"] },
+        "anomaliesCount": { "type": "number" },
+        "correctionsCount": { "type": "number" },
+        "templateId": { "type": "string" },
+        "reportId": { "type": "string" },
+        "userReviewer": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "period", "reportType", "reportId", "userReviewer", "timestamp"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A system user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user", "viewer"] },
+        "displayName": { "type": "string" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "System configuration and user credentials with separated firstName, paternalSurname, and maternalSurname",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "logo": { "type": "string" },
+        "credentials": { "type": "object" },
+        "syncedAt": { "type": "object" }
+      },
+      "required": ["id"]
+    },
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "User account and profile schema with separate first name, paternal surname, and maternal surname",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "paternalSurname": { "type": "string" },
+        "maternalSurname": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMINISTRADOR", "JEFE", "EJECUTIVO", "ARRENDATARIO", "SOLO_EMPLEO"] },
+        "deptTitle": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "allowedModules": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["password", "role", "deptTitle", "email"]
+    },
+    "F980011D": {
+      "title": "F980011D",
+      "description": "JDE Attribute Master records for system entities",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "registryId": { "type": "string" },
+        "entityType": { "type": "string" },
+        "programId": { "type": "string" },
+        "workStationId": { "type": "string" },
+        "nextNumberSeq": { "type": "number" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "hashSignature": { "type": "string" },
+        "lockedBy": { "type": "string" },
+        "lockedAt": { "type": "number" },
+        "isTest": { "type": "string" },
+        "attributes": { "type": "object" }
+      },
+      "required": ["id", "registryId", "entityType", "programId", "workStationId", "nextNumberSeq", "userCreator", "timestamp"]
+    },
+    "DomainCertificate": {
+      "title": "DomainCertificate",
+      "description": "Active Domain Certificate for Corporación Inmobiliaria properties",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "registryId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyName": { "type": "string" },
+        "region": { "type": "string" },
+        "commune": { "type": "string" },
+        "folderPath": { "type": "string" },
+        "documentName": { "type": "string" },
+        "documentUrl": { "type": "string" },
+        "fojas": { "type": "string" },
+        "numero": { "type": "string" },
+        "ano": { "type": "number" },
+        "conservador": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "status": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "registryId", "propertyId", "region", "folderPath", "documentName", "documentUrl", "fojas", "numero", "ano", "conservador", "userCreator", "timestamp"]
+    },
+    "ComplianceRatItem": {
+      "title": "ComplianceRatItem",
+      "description": "Item for the Data Treatment Activity (RAT) under Ley 21696",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "systemCollection": { "type": "string" },
+        "dataSubjects": { "type": "string" },
+        "dataCategories": { "type": "string" },
+        "purposes": { "type": "string" },
+        "legalBasis": { "type": "string", "enum": ["CONSENTIMIENTO", "CONTRATO", "MANDATO_LEGAL", "INTERES_LEGITIMO", "REQUERIMIENTO_PRECONTRATUAL"] },
+        "retentionPeriod": { "type": "string" },
+        "transfers": { "type": "string" },
+        "securityMeasures": { "type": "string" },
+        "isCustom": { "type": "boolean" }
+      },
+      "required": ["id", "systemCollection", "dataSubjects", "dataCategories", "purposes", "legalBasis", "retentionPeriod", "transfers", "securityMeasures"]
+    },
+    "ComplianceChecklistItem": {
+      "title": "ComplianceChecklistItem",
+      "description": "Compliance checklist item for Ley 21696",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string", "enum": ["LEGAL", "TECNICA", "ORGANIZACIONAL", "TITULARES"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "applicableArticle": { "type": "string" },
+        "status": { "type": "string", "enum": ["COMPLETO", "EN_DESARROLLO", "MEDIDAS_REQUERIDAS"] },
+        "auditorNotes": { "type": "string" }
+      },
+      "required": ["id", "category", "title", "description", "applicableArticle", "status"]
+    },
+    "ComplianceDocumentLog": {
+      "title": "ComplianceDocumentLog",
+      "description": "Compliance document log (e.g. Consent, ARCO) under Ley 21696",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "documentType": { "type": "string", "enum": ["CONSENTIMIENTO", "ARCO", "ENCARGO_PROCESAMIENTO", "REPORTE_BRECHA"] },
+        "subjectName": { "type": "string" },
+        "subjectIdentifier": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["VIGENTE", "PROCESADO", "REVISIÓN", "REPORTADO"] },
+        "hashToken": { "type": "string" },
+        "metadata": { "type": "string" }
+      },
+      "required": ["id", "documentType", "subjectName", "subjectIdentifier", "date", "status", "hashToken"]
+    },
+    "ReversalRequest": {
+      "title": "ReversalRequest",
+      "description": "A request to reverse a financial transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "transactionDescription": { "type": "string" },
+        "transactionAmount": { "type": "number" },
+        "transactionType": { "type": "string", "enum": ["INCOME", "EXPENSE"] },
+        "transactionDate": { "type": "string" },
+        "requesterUser": { "type": "string" },
+        "requesterEmail": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDIENTE", "APROBADO", "RECHAZADO"] },
+        "createdAt": { "type": "number" },
+        "controlInternoStatus": { "type": "string", "enum": ["PENDIENTE", "APROBADO", "RECHAZADO"] },
+        "controlInternoUser": { "type": "string" },
+        "controlInternoAt": { "type": "number" },
+        "analistaStatus": { "type": "string", "enum": ["PENDIENTE", "APROBADO", "RECHAZADO"] },
+        "analistaUser": { "type": "string" },
+        "analistaAt": { "type": "number" },
+        "jefeStatus": { "type": "string", "enum": ["PENDIENTE", "APROBADO", "RECHAZADO"] },
+        "jefeUser": { "type": "string" },
+        "jefeAt": { "type": "number" }
+      },
+      "required": ["id", "transactionId", "transactionDescription", "transactionAmount", "transactionType", "transactionDate", "requesterUser", "requesterEmail", "reason", "status", "createdAt", "controlInternoStatus", "analistaStatus", "jefeStatus"]
+    },
+    "PropertyInspection": {
+      "title": "PropertyInspection",
+      "description": "A property delivery or restitution inspection report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyLabel": { "type": "string" },
+        "contractId": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "tenantEmail": { "type": "string" },
+        "executiveName": { "type": "string" },
+        "executiveEmail": { "type": "string" },
+        "type": { "type": "string", "enum": ["ENTRANTE", "RESTITUCION"] },
+        "status": { "type": "string", "enum": ["BORRADOR", "ACTA_ENVIADA", "ACEPTADO", "RECHAZADO"] },
+        "inspectionDate": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "object" } },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "rejectionReason": { "type": "string" },
+        "signatureTenant": { "type": "string" },
+        "signatureExecutive": { "type": "string" },
+        "userCreator": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "propertyId", "propertyLabel", "tenantName", "tenantEmail", "executiveName", "executiveEmail", "type", "status", "inspectionDate", "items", "timestamp", "userCreator"]
+    },
+    "WmsLogisticsPartition": {
+      "title": "WmsLogisticsPartition",
+      "description": "Independent Supply Chain & Warehouse Management System (G41/G46/G49) partitioned state",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "section": { "type": "string", "enum": ["items", "locations", "balances", "tasks", "movements", "shipments"] },
+        "records": { "type": "array", "items": { "type": "object" } },
+        "updatedAt": { "type": "number" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["id", "section", "records", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Financial transactions"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditEntry",
+      "description": "System audit logs"
+    },
+    "/due_diligence/{reportId}": {
+      "schema": "DueDiligenceReport",
+      "description": "Due diligence reports"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Supplier records"
+    },
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Property records"
+    },
+    "/maintenance_expedientes/{expedienteId}": {
+      "schema": "MaintenanceExpediente",
+      "description": "Maintenance files"
+    },
+    "/contracts/{contractId}": {
+      "schema": "Contract",
+      "description": "Supplier contracts"
+    },
+    "/official_docs/{docId}": {
+      "schema": "OfficialDocument",
+      "description": "Official documents"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "ITTicket",
+      "description": "IT support tickets"
+    },
+    "/work_orders/{orderId}": {
+      "schema": "WorkOrder",
+      "description": "Work orders"
+    },
+    "/b13_reports/{reportId}": {
+      "schema": "B13Report",
+      "description": "CMF B13 reports"
+    },
+    "/b4_reports/{reportId}": {
+      "schema": "B4Report",
+      "description": "CMF B4 reports"
+    },
+    "/note14_reports/{reportId}": {
+      "schema": "Note14Report",
+      "description": "Note 14 reports"
+    },
+    "/accounting_reconciliations/{recId}": {
+      "schema": "AccountingReconciliation",
+      "description": "Accounting reconciliations"
+    },
+    "/petty_cash_funds/{fundId}": {
+      "schema": "PettyCash",
+      "description": "Petty cash funds"
+    },
+    "/petty_cash_expenses/{expenseId}": {
+      "schema": "PettyCashExpense",
+      "description": "Petty cash expenses"
+    },
+    "/lease_contracts/{contractId}": {
+      "schema": "LeaseContract",
+      "description": "Lease contracts"
+    },
+    "/chart_of_accounts/{accountId}": {
+      "schema": "AccountingAccount",
+      "description": "Chart of accounts"
+    },
+    "/property_import_drafts/{draftId}": {
+      "schema": "PropertyImportDraft",
+      "description": "Drafts of property imports"
+    },
+    "/appraisals/{appraisalId}": {
+      "schema": "Appraisal",
+      "description": "Property appraisal reports"
+    },
+    "/security_deposits/{depositId}": {
+      "schema": "SecurityDeposit",
+      "description": "Rental security deposits"
+    },
+    "/report_templates/{templateId}": {
+      "schema": "ReportTemplate",
+      "description": "Report reference templates"
+    },
+    "/report_reviews/{reviewId}": {
+      "schema": "ReportReview",
+      "description": "Report review sessions"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "System configuration and credentials"
+    },
+    "/f980011d/{recordId}": {
+      "schema": "F980011D",
+      "description": "Maestro de Atributos del Registro (F980011D) under JDE guidelines"
+    },
+    "/domain_certificates/{certificateId}": {
+      "schema": "DomainCertificate",
+      "description": "Property Active Domain Certificates"
+    },
+    "/compliance_rat/{ratId}": {
+      "schema": "ComplianceRatItem",
+      "description": "Data treatment registry activities"
+    },
+    "/compliance_checklist/{chkId}": {
+      "schema": "ComplianceChecklistItem",
+      "description": "Compliance items for Ley 21696"
+    },
+    "/compliance_document_logs/{docId}": {
+      "schema": "ComplianceDocumentLog",
+      "description": "Logs of compliance consent and ARCO documents"
+    },
+    "/reversal_requests/{requestId}": {
+      "schema": "ReversalRequest",
+      "description": "Triple-signature transaction reversal requests"
+    },
+    "/property_inspections/{inspectionId}": {
+      "schema": "PropertyInspection",
+      "description": "Property delivery and restitution inspections"
+    },
+    "/wms_logistics/{docId}": {
+      "schema": "WmsLogisticsPartition",
+      "description": "Independent Supply Chain & WMS module partitioned collections"
+    }
+  }
+}

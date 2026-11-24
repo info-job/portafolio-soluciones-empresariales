@@ -1,0 +1,774 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+  
+  --radius-xl: 10px;
+  --radius-2xl: 14px;
+  --radius-3xl: 18px;
+  --radius-full: 9999px;
+}
+
+@layer base {
+  body {
+    background-color: #EBF0F5 !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    @apply text-slate-800 antialiased;
+  }
+
+  /* MODERNIZED SOFT EDGES GLOBALLY - ENTERPRISE ERP STYLE */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #8da1b5 #f0f4f8;
+  }
+
+  /* TYPICAL JDE ENTERPRISE GRID TABLE */
+  table {
+    @apply border-collapse! border-spacing-0! w-full border my-1 bg-white;
+    border: 1px solid #7FA6C7 !important;
+    border-radius: 4px !important;
+    overflow: hidden;
+  }
+
+  thead {
+    background: linear-gradient(to bottom, #F0F5FA 0%, #D8E4F1 100%) !important;
+  }
+
+  th {
+    background: linear-gradient(to bottom, #F0F5FA 0%, #D8E4F1 100%) !important;
+    color: #1A3E5C !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.03em !important;
+    padding: 5px 8px !important;
+    border-right: 1px solid #A2BCCF !important;
+    border-bottom: 2px solid #7FA6C7 !important;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 4px 8px !important;
+    border-right: 1px solid #E3ECF3 !important;
+    border-bottom: 1px solid #D2DFEC !important;
+    font-size: 11px !important;
+    color: #2D3E50 !important;
+    background-color: #FFFFFF;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #F8FAFD !important;
+  }
+
+  tr:hover td {
+    background-color: #FFFCDD !important; /* Authentic JDE light yellow-gold selection highlight */
+    color: #111111 !important;
+  }
+
+  /* JDE ENTERPRISEONE TABS & QUERY SELECTION PANELS */
+  .jde-tab-bar {
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 2px !important;
+    background: linear-gradient(to bottom, #D0DFEE 0%, #B8CCE0 100%) !important;
+    padding: 6px 8px 0 8px !important;
+    border: 1px solid #9DB2C5 !important;
+    border-bottom: none !important;
+    border-top-left-radius: 4px !important;
+    border-top-right-radius: 4px !important;
+  }
+
+  .jde-tab-item {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    color: #1A3E5C !important;
+    padding: 5px 14px !important;
+    background: linear-gradient(to bottom, #E8F0F8 0%, #CADEED 100%) !important;
+    border: 1px solid #8FA8BE !important;
+    border-bottom: none !important;
+    border-top-left-radius: 5px !important;
+    border-top-right-radius: 5px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7) !important;
+  }
+
+  .jde-tab-item:hover {
+    background: linear-gradient(to bottom, #FFFFFF 0%, #E2EDF8 100%) !important;
+    color: #002D62 !important;
+  }
+
+  .jde-tab-item-active {
+    background: #FFFFFF !important;
+    color: #002D62 !important;
+    font-weight: 800 !important;
+    border-color: #7FA6C7 !important;
+    border-bottom: 2px solid #FFFFFF !important;
+    margin-bottom: -1px !important;
+    z-index: 2 !important;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.06) !important;
+  }
+
+  /* JDE QBE (QUERY BY EXAMPLE) COLUMN FILTER INPUTS */
+  .jde-qbe-input {
+    width: 100% !important;
+    padding: 2px 5px !important;
+    font-size: 10px !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+    border: 1px solid #7FA6C7 !important;
+    background-color: #FFFFFF !important;
+    border-radius: 2px !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06) !important;
+    color: #1A3E5C !important;
+    font-weight: 600 !important;
+  }
+
+  .jde-qbe-input:focus {
+    border-color: #002D62 !important;
+    background-color: #FFFFF2 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(0, 45, 98, 0.2) !important;
+  }
+
+  /* JDE ACTION TOOLBAR (COMMAND BAR) */
+  .jde-action-bar {
+    background: linear-gradient(to bottom, #FFFFFF 0%, #E8F0F8 100%) !important;
+    border: 1px solid #A2BCCF !important;
+    border-radius: 4px !important;
+    padding: 4px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 8px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  }
+
+  .jde-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: #1A3E5C !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    padding: 3px 8px !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .jde-action-btn:hover {
+    background-color: #D6E4F0 !important;
+    border-color: #90A2B8 !important;
+    color: #002D62 !important;
+  }
+
+  /* JDE QUERY PARAMETER FORM BOX */
+  .jde-query-panel {
+    background: linear-gradient(to bottom, #F4F8FC 0%, #E6EEF5 100%) !important;
+    border: 1px solid #B0C4D6 !important;
+    border-radius: 4px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 10px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8) !important;
+  }
+
+  /* JDE GRID BANNER STATUS BAR */
+  .jde-grid-banner {
+    background: linear-gradient(to bottom, #E8EEF5 0%, #D4E2F0 100%) !important;
+    border: 1px solid #9DB2C5 !important;
+    border-bottom: none !important;
+    border-top-left-radius: 4px !important;
+    border-top-right-radius: 4px !important;
+    padding: 4px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: #1A3E5C !important;
+  }
+
+  /* JDE ENTERPRISEONE TOP BAR MENU BUTTONS & DROPDOWNS */
+  .jde-topbar button,
+  button.jde-menu-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    border-radius: 2px !important;
+    border: 1px solid transparent !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    transition: all 0.12s ease !important;
+    white-space: nowrap !important;
+  }
+
+  .jde-topbar button:hover,
+  button.jde-menu-btn:hover {
+    background-color: rgba(255, 255, 255, 0.16) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  .jde-menu-btn-active,
+  button.jde-menu-btn.jde-menu-btn-active {
+    background-color: #002D62 !important;
+    color: #FFCC00 !important;
+    font-weight: 700 !important;
+    border-color: #FFCC00 !important;
+  }
+
+  /* JDE DROPDOWN MENU ITEMS */
+  .jde-dropdown-item,
+  button.jde-dropdown-item {
+    all: unset;
+    box-sizing: border-box;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 5px 12px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    transition: background-color 0.1s ease !important;
+  }
+
+  .jde-dropdown-item:hover,
+  button.jde-dropdown-item:hover {
+    background-color: #FFFCDD !important;
+    color: #002D62 !important;
+  }
+
+  /* JDE ALTA ACTION TOOLBAR BUTTONS */
+  .jde-btn,
+  button.jde-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, #E6EEF6 100%) !important;
+    border: 1px solid #9DB2C3 !important;
+    color: #002D62 !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    padding: 3px 8px !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    text-transform: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    white-space: nowrap !important;
+  }
+
+  .jde-btn:hover,
+  button.jde-btn:hover {
+    background: linear-gradient(180deg, #F3F7FA 0%, #DCE7F2 100%) !important;
+    border-color: #6B8095 !important;
+    color: #001B3B !important;
+  }
+
+  .jde-btn:active,
+  button.jde-btn:active {
+    background-color: #CBE2F3 !important;
+  }
+
+  /* DEFAULT BUTTON Overrides for plain unstyled buttons (respects Tailwind classes) */
+  button:not([class*="bg-"]):not([class*="text-"]):not(.no-jde-override):not(.jde-btn):not(.jde-menu-btn):not(.jde-dropdown-item):not(.jde-action-btn):not([data-jde-exempt]) {
+    border-radius: 6px;
+    border: 1px solid #A2A2A2;
+    background-color: #F1F1F1;
+    color: #333333;
+    padding: 6px 14px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.1s ease-in-out;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  button:not([class*="bg-"]):not([class*="text-"]):not(.no-jde-override):not(.jde-btn):not(.jde-menu-btn):not(.jde-dropdown-item):not(.jde-action-btn):not([data-jde-exempt]):hover:not(:disabled) {
+    background-color: #E2E2E2;
+    border-color: #8C8C8C;
+    color: #000000;
+    cursor: pointer;
+  }
+
+  /* INPUT Overrides - STRICTLY SOFT WITH GREY ENVELOPE BORDERS */
+  input, select, textarea {
+    border-radius: 6px !important;
+    border: 1px solid #9DB2C3 !important;
+    background-color: #FFFFFF !important;
+    color: #2D3E50 !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    box-shadow: none !important;
+    transition: all 0.1s;
+  }
+
+  /* Hide number input spinners across browsers */
+  input[type=number]::-webkit-inner-spin-button, 
+  input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none !important; 
+    margin: 0 !important; 
+  }
+  input[type=number] {
+    -moz-appearance: textfield !important;
+  }
+
+  input.clean-currency-field {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding-left: 8px !important;
+    padding-right: 28px !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: #002D62 !important; /* AssetFlow Navy Blue */
+    outline: none !important;
+    background-color: #FFFFF8 !important; /* Highlight focused field slightly */
+    box-shadow: 0 0 0 2px rgba(0, 45, 98, 0.15) !important;
+  }
+
+  input:disabled, select:disabled, textarea:disabled {
+    background-color: #EBEFF2 !important;
+    color: #7A8B99 !important;
+    border-color: #C1D0DC !important;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EBF0F5;
+  border-left: 1px solid #C4D3E0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8DA1B5;
+  border: 2px solid #EBF0F5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0B3C5D;
+}
+
+/* Authentic JDE EnterpriseOne Slide Bar (Vertical & Horizontal Scrollbar) */
+/* Authentic JDE EnterpriseOne Slide Bar (Vertical & Horizontal Scrollbar) */
+.jde-scrollbar, .custom-audit-scroll, .jde-grid-scroll {
+  scrollbar-width: auto !important;
+  scrollbar-color: #0B3C5D #E2ECF5 !important;
+  overflow-x: auto !important;
+}
+
+.jde-scrollbar::-webkit-scrollbar, .custom-audit-scroll::-webkit-scrollbar, .jde-grid-scroll::-webkit-scrollbar {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.jde-scrollbar::-webkit-scrollbar-track, .custom-audit-scroll::-webkit-scrollbar-track, .jde-grid-scroll::-webkit-scrollbar-track {
+  background: #E2ECF5 !important;
+  border: 1px solid #7FA6C7 !important;
+}
+
+.jde-scrollbar::-webkit-scrollbar-thumb, .custom-audit-scroll::-webkit-scrollbar-thumb, .jde-grid-scroll::-webkit-scrollbar-thumb {
+  background: #0B3C5D !important;
+  border: 2px solid #E2ECF5 !important;
+  border-radius: 4px !important;
+}
+
+.jde-scrollbar::-webkit-scrollbar-thumb:hover, .custom-audit-scroll::-webkit-scrollbar-thumb:hover, .jde-grid-scroll::-webkit-scrollbar-thumb:hover {
+  background: #001D3B !important;
+}
+
+.jde-scrollbar::-webkit-scrollbar-corner, .custom-audit-scroll::-webkit-scrollbar-corner, .jde-grid-scroll::-webkit-scrollbar-corner {
+  background: #CBDCEB !important;
+  border: 1px solid #7FA6C7 !important;
+}
+
+/* Enterprise Form Section Containers - replacing Glassmorphism and pro-card */
+.glass, .pro-card, .bg-white.rounded-3xl, .bg-white.rounded-2xl {
+  background-color: #FAFBFD !important;
+  border-radius: 8px !important;
+  border: 1px solid #91A6BA !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* JDE Section Title Styling (Only when no explicit text color is applied) */
+.jde-title, h2:not([class*="text-"]):not([class*="bg-"]), h3:not([class*="text-"]):not([class*="bg-"]) {
+  color: #002D62;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0px;
+}
+
+/* Custom JDE Subheader Style */
+.jde-legend {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #4B6276;
+  border-bottom: 1px solid #B0C4D6;
+  margin-bottom: 8px;
+  padding-bottom: 2px;
+}
+
+/* Custom indicator boxes */
+.jde-read-only-box {
+  background-color: #F0F4F8;
+  border: 1px solid #B1C2D1;
+  padding: 4px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #2D3E50;
+  border-radius: 4px !important;
+}
+
+/* JDE ERP CANVAS BACKGROUND OVERRIDES FOR COHESIVE SYSTEM HEALTH */
+body, 
+main,
+.bg-slate-50,
+.bg-slate-50\/50,
+.bg-slate-50\/30,
+.bg-slate-100,
+.bg-slate-100\/50,
+div[class*="bg-slate-50"],
+div[class*="bg-slate-100"] {
+  background-color: #EBF0F5 !important;
+}
+
+/* Ensure container cards remain JDE soft white on the blue-grey layout canvas */
+.bg-white:not(input, select, textarea, td, table, button, tr, th),
+.glass,
+.pro-card,
+.bg-white.rounded-3xl,
+.bg-white.rounded-2xl {
+  background-color: #FAFBFD !important;
+  border: 1px solid #91A6BA !important;
+}
+
+/* HIGH-FIDELITY PRINT STYLES FOR MAQUETA / BROCHURE PDF GENERATOR */
+@media print {
+  body, html, #root, main {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .no-print, .no-print * {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* Force background colors and background images to render in PDF output */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Align the printable container to the top-left coordinate */
+  #printable-report,
+  #printable-area,
+  #printable-report-wrapper {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    overflow: visible !important;
+    z-index: 9999999 !important;
+  }
+
+  #printable-report > div,
+  #printable-area > div,
+  #printable-report-wrapper > div {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    background-color: #ffffff !important;
+  }
+
+  @page {
+    size: letter portrait;
+    margin: 12mm 15mm;
+  }
+}
+
+/* ==========================================================================
+   JDE / EXCEL GRID INTERACTIVE RESIZERS (COLUMNS & ROWS)
+   ========================================================================== */
+.resizer,
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize !important;
+  user-select: none;
+  touch-action: none;
+  z-index: 25;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.resizer:hover,
+.col-resizer:hover,
+.resizer:active,
+.col-resizer:active {
+  background-color: #0b57d0 !important;
+  opacity: 0.9;
+  box-shadow: 0 0 4px rgba(11, 87, 208, 0.4);
+}
+
+.row-resizer {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 7px;
+  cursor: row-resize !important;
+  user-select: none;
+  touch-action: none;
+  z-index: 20;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.row-resizer:hover,
+.row-resizer:active {
+  background-color: #0b57d0 !important;
+  opacity: 0.9;
+  box-shadow: 0 0 4px rgba(11, 87, 208, 0.4);
+}
+
+/* Visual cue for resizable cells on hover */
+th:hover .resizer,
+th:hover .col-resizer {
+  background-color: rgba(11, 87, 208, 0.25);
+}
+
+td:hover .row-resizer {
+  background-color: rgba(11, 87, 208, 0.25);
+}
+
+/* ==========================================================================
+   EXPERT DESIGNER CONTRAST & ACCESSIBILITY SYSTEM (WCAG AAA STANDARD)
+   Garantiza contraste óptimo, armonía visual y legibilidad en todos los módulos
+   ========================================================================== */
+
+/* 1. INPUTS, PLACEHOLDERS & FORM CONTROLS HIGH-CONTRAST */
+input, select, textarea {
+  color: #0F172A !important;
+  border-color: #8EA8BD !important;
+}
+
+input::placeholder, select::placeholder, textarea::placeholder {
+  color: #5A7184 !important;
+  opacity: 1 !important;
+  font-weight: 500 !important;
+}
+
+/* 2. REFINAMIENTO DE TABLAS Y CUADRÍCULAS EXCEL / JDE */
+th {
+  color: #0B2545 !important;
+}
+
+td {
+  color: #0F172A !important;
+}
+
+/* 3. LIGHT SURFACES: CORRECCIÓN GLOBAL DE TEXTO DESLAVADO (SLATE-300/400/500) */
+/* Eleva el contraste de textos secundarios y metadatos en fondos claros a nivel WCAG AAA */
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-slate-400,
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-gray-400,
+.bg-white .text-slate-400,
+.bg-white .text-gray-400,
+.bg-slate-50 .text-slate-400,
+.bg-slate-50 .text-gray-400,
+.bg-slate-100 .text-slate-400,
+.bg-slate-100 .text-gray-400,
+.bg-\[\#FAFBFD\] .text-slate-400,
+.bg-\[\#EBF0F5\] .text-slate-400,
+.bg-\[\#F4F8FB\] .text-slate-400 {
+  color: #334155 !important; /* Slate 700 para contraste superior (> 7:1) */
+}
+
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-slate-300,
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-gray-300,
+.bg-white .text-slate-300,
+.bg-white .text-gray-300,
+.bg-slate-50 .text-slate-300,
+.bg-slate-50 .text-gray-300,
+.bg-slate-100 .text-slate-300,
+.bg-slate-100 .text-gray-300,
+.bg-\[\#FAFBFD\] .text-slate-300,
+.bg-\[\#EBF0F5\] .text-slate-300 {
+  color: #475569 !important; /* Slate 600 (> 5.5:1) */
+}
+
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-slate-500,
+:not(.bg-slate-900):not(.bg-slate-950):not(.bg-black):not(.bg-\[\#002D62\]):not(.bg-\[\#002C5B\]):not(.bg-\[\#001B3B\]):not(.bg-\[\#005B94\]):not(.bg-\[\#0B3C5D\]):not(.bg-\[\#020617\]):not(.bg-\[\#0a0c14\]) > .text-gray-500,
+.bg-white .text-slate-500,
+.bg-white .text-gray-500,
+.bg-slate-50 .text-slate-500,
+.bg-slate-50 .text-gray-500,
+.bg-slate-100 .text-slate-500,
+.bg-slate-100 .text-gray-500 {
+  color: #1E293B !important; /* Slate 800 (> 9:1) */
+}
+
+/* 4. COLORES SEMÁNTICOS DE ESTADO EN SUPERFICIES CLARAS (AMBER, EMERALD, ROSE, INDIGO) */
+/* Evita textos amarillos deslavados e ilegibles en fondos blancos */
+.bg-white .text-amber-500,
+.bg-white .text-amber-400,
+.bg-white .text-yellow-500,
+.bg-white .text-yellow-600,
+.bg-slate-50 .text-amber-500,
+.bg-slate-50 .text-amber-400,
+.bg-amber-50 .text-amber-500,
+.bg-amber-50 .text-amber-600,
+.bg-amber-50 .text-amber-700 {
+  color: #854D0E !important; /* Amber 800 - contraste 6.2:1 en blanco */
+}
+
+.bg-white .text-emerald-500,
+.bg-white .text-emerald-600,
+.bg-slate-50 .text-emerald-500,
+.bg-slate-50 .text-emerald-600,
+.bg-emerald-50 .text-emerald-600,
+.bg-emerald-50 .text-emerald-500 {
+  color: #065F46 !important; /* Emerald 800 - contraste 6.5:1 */
+}
+
+.bg-white .text-rose-500,
+.bg-white .text-rose-400,
+.bg-slate-50 .text-rose-500,
+.bg-slate-50 .text-rose-400,
+.bg-rose-50 .text-rose-500,
+.bg-rose-50 .text-rose-600 {
+  color: #9F1239 !important; /* Rose 800 - contraste 7:1 */
+}
+
+.bg-white .text-indigo-500,
+.bg-slate-50 .text-indigo-500,
+.bg-indigo-50 .text-indigo-500,
+.bg-indigo-50 .text-indigo-600 {
+  color: #3730A3 !important; /* Indigo 800 - contraste 7.5:1 */
+}
+
+/* 5. DARK SURFACES: CONTRASTE ALTO PARA TEXTO EN PANELES OSCUROS */
+/* Garantiza que todo texto dentro de barras azules o consolas negras sea luminoso y nítido */
+.bg-slate-900 .text-slate-400,
+.bg-slate-950 .text-slate-400,
+.bg-black .text-slate-400,
+.bg-\[\#002D62\] .text-slate-400,
+.bg-\[\#002C5B\] .text-slate-400,
+.bg-\[\#001B3B\] .text-slate-400,
+.bg-\[\#005B94\] .text-slate-400,
+.bg-\[\#0B3C5D\] .text-slate-400,
+.bg-\[\#020617\] .text-slate-400,
+.bg-\[\#0a0c14\] .text-slate-400,
+.bg-slate-900 .text-slate-500,
+.bg-slate-950 .text-slate-500,
+.bg-black .text-slate-500,
+.bg-\[\#002D62\] .text-slate-500,
+.bg-\[\#002C5B\] .text-slate-500,
+.bg-\[\#001B3B\] .text-slate-500,
+.bg-\[\#005B94\] .text-slate-500,
+.bg-\[\#0B3C5D\] .text-slate-500,
+.bg-\[\#020617\] .text-slate-500 {
+  color: #E2E8F0 !important; /* Slate 200 - contraste > 10:1 en fondos oscuros */
+}
+
+.bg-slate-900 .text-slate-300,
+.bg-slate-950 .text-slate-300,
+.bg-black .text-slate-300,
+.bg-\[\#002D62\] .text-slate-300,
+.bg-\[\#002C5B\] .text-slate-300,
+.bg-\[\#001B3B\] .text-slate-300,
+.bg-\[\#005B94\] .text-slate-300,
+.bg-\[\#0B3C5D\] .text-slate-300,
+.bg-\[\#020617\] .text-slate-300 {
+  color: #F8FAFC !important; /* Slate 50 - contraste > 12:1 */
+}
+
+/* 6. BADGES & PILLS HARMONIZATION */
+.bg-amber-100 {
+  background-color: #FEF3C7 !important;
+  color: #78350F !important;
+  border-color: #FCD34D !important;
+}
+
+.bg-emerald-100 {
+  background-color: #D1FAE5 !important;
+  color: #064E3B !important;
+  border-color: #6EE7B7 !important;
+}
+
+.bg-rose-100 {
+  background-color: #FFE4E6 !important;
+  color: #881337 !important;
+  border-color: #FDA4AF !important;
+}
+
+.bg-sky-100 {
+  background-color: #E0F2FE !important;
+  color: #0C4A6E !important;
+  border-color: #7DD3FC !important;
+}
+
+.bg-indigo-100 {
+  background-color: #E0E7FF !important;
+  color: #312E81 !important;
+  border-color: #A5B4FC !important;
+}
+
+.bg-purple-100 {
+  background-color: #F3E8FF !important;
+  color: #581C87 !important;
+  border-color: #D8B4FE !important;
+}
+
+/* 7. FOCUS RINGS ACCESSIBILITY */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #005B94 !important;
+  outline-offset: 2px !important;
+}

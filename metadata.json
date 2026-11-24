@@ -1,0 +1,10 @@
+{
+  "name": "AssetFlow Enterprise",
+  "description": "Plataforma empresarial de gestión inmobiliaria y financiera con auditoría IA, gestión de Órdenes de Trabajo (OTs), debida diligencia UAF/PEP y conciliación contable ERP.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

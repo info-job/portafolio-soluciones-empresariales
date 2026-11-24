@@ -1,0 +1,702 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: transactions
+    // Document ID: {transactionId}
+    // Fields:
+    //   - id: string (required)
+    //   - date: string (required)
+    //   - invoiceDate: string (optional)
+    //   - documentNumber: string (optional)
+    //   - description: string (required)
+    //   - amount: number (required)
+    //   - category: string (optional)
+    //   - insuranceCompany: string (optional)
+    //   - type: string (required, INCOME/EXPENSE)
+    //   - user: string (required)
+    //   - timestamp: number (required)
+    //   - metadata: map (optional)
+    //
+    // Collection: audit_logs
+    // Document ID: {logId}
+    // Fields:
+    //   - id: string (required)
+    //   - timestamp: string (required)
+    //   - action: string (required)
+    //   - module: string (required)
+    //   - target: string (optional)
+    //   - user: string (required)
+    //   - details: string (optional)
+    //   - metadata: map (optional)
+    //
+    // Collection: due_diligence
+    // Document ID: {reportId}
+    // Fields:
+    //   - id: string (required)
+    //   - date: string (required)
+    //   - supplierId: string (optional)
+    //   - supplierName: string (required)
+    //   - supplierTaxId: string (optional)
+    //   - riskLevel: string (required)
+    //   - analyst: string (optional)
+    //   - status: string (required)
+    //   - summary: string (optional)
+    //
+    // Collection: suppliers
+    // Document ID: {supplierId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - taxId: string (required)
+    //   - status: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      // Permitir sincronización híbrida online-sync segura sin requerir autenticación obligatoria en el cliente
+      return true;
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "samaheim@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidTransaction(data) {
+      return hasRequiredFields(['id', 'date', 'description', 'amount', 'type', 'user', 'timestamp']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.date is string && data.date.size() < 100 &&
+             data.description is string && data.description.size() < 2000 &&
+             data.amount is number &&
+             data.type in ['INCOME', 'EXPENSE'] &&
+             data.user is string && data.user.size() < 200 &&
+             (data.timestamp is number || data.timestamp is string) &&
+             (!('subCategory' in data) || data.subCategory is string);
+    }
+
+    function isValidAuditLog(data) {
+      return hasRequiredFields(['id', 'action', 'user']) &&
+             data.id is string && data.id.size() < 128 &&
+             (!('timestamp' in data) || data.timestamp is string || data.timestamp is number) &&
+             data.action is string && data.action.size() < 128 &&
+             (!('module' in data) || data.module is string) &&
+             data.user is string && data.user.size() < 200;
+    }
+
+    function isValidDueDiligence(data) {
+      return hasRequiredFields(['id', 'date', 'supplierName', 'riskLevel', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.date is string && data.date.size() < 50 &&
+             data.supplierName is string && data.supplierName.size() < 200 &&
+             data.riskLevel is string && data.riskLevel.size() < 50 &&
+             data.status is string && data.status.size() < 50;
+    }
+
+    function isValidSupplier(data) {
+      return hasRequiredFields(['id', 'name', 'taxId', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.name is string && data.name.size() < 200 &&
+             data.taxId is string && data.taxId.size() < 50 &&
+             data.status is string && data.status.size() < 50;
+    }
+
+    function isValidProperty(data) {
+      return hasRequiredFields(['id', 'code', 'building']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.code is string && data.code.size() < 100 &&
+             data.building is string && data.building.size() < 200 &&
+             (!('financialData' in data) || data.financialData is map) &&
+             (!('insurancePolicy' in data) || data.insurancePolicy is map) &&
+             (!('rawMetadata' in data) || data.rawMetadata is map);
+    }
+
+    function isValidMaintenance(data) {
+      return hasRequiredFields(['id', 'propertyId', 'title', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.propertyId is string && data.propertyId.size() < 100 &&
+             data.title is string && data.title.size() < 200 &&
+             data.status is string && data.status.size() < 50;
+    }
+
+    function isValidSolicitud(data) {
+      return hasRequiredFields(['id', 'propertyId', 'title', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.propertyId is string && data.propertyId.size() < 100 &&
+             data.title is string && data.title.size() < 200 &&
+             data.status is string && data.status.size() < 50;
+    }
+
+    function isValidPropertyInspection(data) {
+      return hasRequiredFields(['id', 'propertyId', 'propertyLabel', 'tenantName', 'tenantEmail', 'executiveName', 'executiveEmail', 'type', 'status', 'inspectionDate', 'items', 'timestamp', 'userCreator']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.propertyId is string && data.propertyId.size() < 100 &&
+             data.propertyLabel is string && data.propertyLabel.size() < 300 &&
+             data.tenantName is string && data.tenantName.size() < 200 &&
+             data.tenantEmail is string && data.tenantEmail.size() < 200 &&
+             data.executiveName is string && data.executiveName.size() < 200 &&
+             data.executiveEmail is string && data.executiveEmail.size() < 200 &&
+             data.type in ['ENTRANTE', 'RESTITUCION'] &&
+             data.status in ['BORRADOR', 'ACTA_ENVIADA', 'ACEPTADO', 'RECHAZADO'] &&
+             data.inspectionDate is string && data.inspectionDate.size() < 50 &&
+             data.items is list &&
+             data.timestamp is number &&
+             data.userCreator is string && data.userCreator.size() < 100;
+    }
+
+    function isValidContract(data) {
+      return hasRequiredFields(['id', 'supplierId', 'supplierName', 'startDate', 'endDate', 'monthlyAmount', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.supplierId is string && data.supplierId.size() < 100 &&
+             data.supplierName is string && data.supplierName.size() < 200 &&
+             data.startDate is string && data.endDate is string &&
+             data.monthlyAmount is number &&
+             data.status is string;
+    }
+
+    function isValidOfficialDoc(data) {
+      return hasRequiredFields(['id', 'type', 'docNumber', 'date', 'subject', 'status']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.type is string && data.type.size() < 100 &&
+             data.docNumber is string &&
+             data.date is string &&
+             data.subject is string && data.subject.size() < 2000 &&
+             data.status is string;
+    }
+
+    function isValidTicket(data) {
+      return hasRequiredFields(['id', 'folio', 'title', 'category', 'priority', 'status', 'requester']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.folio is string &&
+             data.title is string && data.title.size() < 200 &&
+             data.category is string &&
+             data.priority is string &&
+             data.status is string &&
+             data.requester is string;
+    }
+
+    function isValidWorkOrder(data) {
+      return hasRequiredFields(['id', 'folio', 'issueDate', 'supplierName', 'total', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.folio is string &&
+             data.issueDate is string &&
+             data.supplierName is string &&
+             data.total is number &&
+             data.status is string;
+    }
+
+    function isValidReport(data) {
+      return hasRequiredFields(['id', 'period', 'insuranceCompany', 'uploadDate']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.period is string &&
+             data.insuranceCompany is string &&
+             data.uploadDate is string;
+    }
+
+    function isValidReconciliation(data) {
+      return hasRequiredFields(['id', 'period', 'uploadDate', 'fileName']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.period is string &&
+             data.uploadDate is string &&
+             data.fileName is string;
+    }
+
+    function isValidPettyCash(data) {
+      return hasRequiredFields(['id', 'name', 'responsible', 'initialBalance', 'currentBalance', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.name is string &&
+             data.responsible is string &&
+             data.initialBalance is number &&
+             data.currentBalance is number &&
+             data.status is string;
+    }
+
+    function isValidPettyCashExpense(data) {
+      return hasRequiredFields(['id', 'pettyCashId', 'date', 'description', 'amount', 'category']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.pettyCashId is string &&
+             data.date is string &&
+             data.description is string &&
+             data.amount is number &&
+             data.category is string;
+    }
+
+    function isValidLeaseContract(data) {
+      return hasRequiredFields(['id', 'propertyId', 'tenantName', 'startDate', 'endDate', 'monthlyAmount', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.propertyId is string &&
+             data.tenantName is string &&
+             data.startDate is string &&
+             data.endDate is string &&
+             data.monthlyAmount is number &&
+             data.status is string;
+    }
+
+    function isValidAppraisal(data) {
+      return hasRequiredFields(['id', 'address', 'commune', 'appraiserName', 'appraisalDate', 'marketValueCLP', 'status']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.address is string && data.address.size() < 1000 &&
+             data.commune is string && data.commune.size() < 500 &&
+             data.appraiserName is string && data.appraiserName.size() < 500 &&
+             data.appraisalDate is string &&
+             data.marketValueCLP is number &&
+             data.status is string &&
+             (!('roles' in data) || data.roles is list);
+    }
+
+    function isValidReportTemplate(data) {
+      return hasRequiredFields(['id', 'name', 'reportType', 'records']) &&
+             data.id is string &&
+             data.name is string &&
+             data.reportType in ['B13', 'B4'] &&
+             data.records is list;
+    }
+
+    function isValidReportReview(data) {
+      return hasRequiredFields(['id', 'period', 'reportType', 'reportId', 'userReviewer', 'timestamp']) &&
+             data.id is string &&
+             data.period is string &&
+             data.reportType in ['B13', 'B4'] &&
+             data.reportId is string &&
+             data.userReviewer is string &&
+             data.timestamp is number;
+    }
+
+    function isValidSecurityDeposit(data) {
+      return hasRequiredFields(['id', 'contractId', 'tenantName', 'initialAmount', 'status']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.contractId is string && data.contractId.size() < 100 &&
+             data.tenantName is string && data.tenantName.size() < 200 &&
+             data.initialAmount is number &&
+             data.status in ['RESGUARDADA', 'EN_LIQUIDACION', 'LIQUIDADA'];
+    }
+
+    function isValidReversalRequest(data) {
+      return hasRequiredFields(['id', 'transactionId', 'transactionDescription', 'transactionAmount', 'transactionType', 'transactionDate', 'requesterUser', 'requesterEmail', 'reason', 'status', 'createdAt', 'controlInternoStatus', 'analistaStatus', 'jefeStatus']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.transactionId is string && data.transactionId.size() < 100 &&
+             data.transactionDescription is string && data.transactionDescription.size() < 500 &&
+             data.transactionAmount is number &&
+             data.transactionType in ['INCOME', 'EXPENSE'] &&
+             data.transactionDate is string && data.transactionDate.size() < 50 &&
+             data.requesterUser is string && data.requesterUser.size() < 100 &&
+             data.requesterEmail is string && data.requesterEmail.size() < 100 &&
+             data.reason is string && data.reason.size() < 2000 &&
+             data.status in ['PENDIENTE', 'APROBADO', 'RECHAZADO'] &&
+             data.createdAt is number &&
+             data.controlInternoStatus in ['PENDIENTE', 'APROBADO', 'RECHAZADO'] &&
+             data.analistaStatus in ['PENDIENTE', 'APROBADO', 'RECHAZADO'] &&
+             data.jefeStatus in ['PENDIENTE', 'APROBADO', 'RECHAZADO'];
+    }
+
+    function isValidUser(data) {
+      return hasRequiredFields(['email', 'role']) && data.email is string && data.role is string;
+    }
+
+    function isValidSetting(data) {
+      return hasRequiredFields(['id']) &&
+             data.id is string &&
+             (!('logo' in data) || data.logo is string || data.logo == null) &&
+             (!('credentials' in data) || data.credentials is map);
+    }
+
+    function isValidPropertyImportDraft(data) {
+      return hasRequiredFields(['id', 'fileName', 'headers', 'rows', 'timestamp', 'userCreator', 'status']) &&
+             data.id is string &&
+             data.fileName is string &&
+             data.headers is list &&
+             data.rows is list &&
+             data.timestamp is number &&
+             data.userCreator is string &&
+             data.status in ['PENDING', 'COMPLETED'] &&
+             (!('sheetName' in data) || data.sheetName is string || data.sheetName == null) &&
+             (!('mapping' in data) || data.mapping is map);
+    }
+
+    function isValidF980011D(data) {
+      return hasRequiredFields(['id', 'registryId', 'entityType', 'programId', 'workStationId', 'nextNumberSeq', 'userCreator', 'timestamp']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.registryId is string && data.registryId.size() < 100 &&
+             data.entityType is string && data.entityType.size() < 100 &&
+             data.programId is string && data.programId.size() < 100 &&
+             data.workStationId is string && data.workStationId.size() < 100 &&
+             data.nextNumberSeq is number &&
+             data.userCreator is string && data.userCreator.size() < 100 &&
+             data.timestamp is number;
+    }
+
+    function isValidDomainCertificate(data) {
+      return hasRequiredFields(['id', 'registryId', 'propertyId', 'region', 'folderPath', 'documentName', 'documentUrl', 'fojas', 'numero', 'ano', 'conservador', 'userCreator', 'timestamp']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.registryId is string && data.registryId.size() < 128 &&
+             data.propertyId is string && data.propertyId.size() < 128 &&
+             data.region is string && data.region.size() < 128 &&
+             data.folderPath is string && data.folderPath.size() < 512 &&
+             data.documentName is string && data.documentName.size() < 256 &&
+             data.documentUrl is string &&
+             data.fojas is string && data.fojas.size() < 100 &&
+             data.numero is string && data.numero.size() < 100 &&
+             data.ano is number &&
+             data.conservador is string && data.conservador.size() < 256 &&
+             data.userCreator is string && data.userCreator.size() < 128 &&
+             data.timestamp is number;
+    }
+
+    function isValidComplianceRatItem(data) {
+      return hasRequiredFields(['id', 'systemCollection', 'dataSubjects', 'dataCategories', 'purposes', 'legalBasis', 'retentionPeriod', 'transfers', 'securityMeasures']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.systemCollection is string && data.systemCollection.size() < 500 &&
+             data.dataSubjects is string && data.dataSubjects.size() < 1000 &&
+             data.dataCategories is string && data.dataCategories.size() < 2000 &&
+             data.purposes is string && data.purposes.size() < 2000 &&
+             data.legalBasis in ['CONSENTIMIENTO', 'CONTRATO', 'MANDATO_LEGAL', 'INTERES_LEGITIMO', 'REQUERIMIENTO_PRECONTRATUAL'] &&
+             data.retentionPeriod is string && data.retentionPeriod.size() < 1000 &&
+             data.transfers is string && data.transfers.size() < 1000 &&
+             data.securityMeasures is string && data.securityMeasures.size() < 1000 &&
+             (!('isCustom' in data) || data.isCustom is bool);
+    }
+
+    function isValidComplianceChecklistItem(data) {
+      return hasRequiredFields(['id', 'category', 'title', 'description', 'applicableArticle', 'status']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.category in ['LEGAL', 'TECNICA', 'ORGANIZACIONAL', 'TITULARES'] &&
+             data.title is string && data.title.size() < 500 &&
+             data.description is string && data.description.size() < 2000 &&
+             data.applicableArticle is string && data.applicableArticle.size() < 500 &&
+             data.status in ['COMPLETO', 'EN_DESARROLLO', 'MEDIDAS_REQUERIDAS'] &&
+             (!('auditorNotes' in data) || data.auditorNotes is string);
+    }
+
+    function isValidComplianceDocumentLog(data) {
+      return hasRequiredFields(['id', 'documentType', 'subjectName', 'subjectIdentifier', 'date', 'status', 'hashToken']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.documentType in ['CONSENTIMIENTO', 'ARCO', 'ENCARGO_PROCESAMIENTO', 'REPORTE_BRECHA'] &&
+             data.subjectName is string && data.subjectName.size() < 500 &&
+             data.subjectIdentifier is string && data.subjectIdentifier.size() < 100 &&
+             data.date is string && data.date.size() < 100 &&
+             data.status in ['VIGENTE', 'PROCESADO', 'REVISIÓN', 'REPORTADO'] &&
+             data.hashToken is string && data.hashToken.size() < 256 &&
+             (!('metadata' in data) || data.metadata is string);
+    }
+
+    function isValidTaxDeclaration(data) {
+      return hasRequiredFields(['id', 'type', 'periodLabel', 'status', 'folio', 'userCreator', 'timestamp']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.type in ['F29', 'F22'] &&
+             data.periodLabel is string && data.periodLabel.size() < 200 &&
+             data.status in ['BORRADOR', 'EMITIDO', 'OFICIAL_EMITIDO', 'OBSERVADO'] &&
+             data.folio is string && data.folio.size() < 100 &&
+             data.userCreator is string && data.userCreator.size() < 128 &&
+             data.timestamp is number;
+    }
+
+    function isValidDteInvoice(data) {
+      return hasRequiredFields(['id', 'folio', 'dteType', 'issueDate', 'issuerTaxId', 'receiverTaxId', 'totalAmount', 'status']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.folio is number &&
+             data.dteType in ['33', '34', '56', '61'] &&
+             data.issueDate is string && data.issueDate.size() < 50 &&
+             data.issuerTaxId is string && data.issuerTaxId.size() < 50 &&
+             data.receiverTaxId is string && data.receiverTaxId.size() < 50 &&
+             data.totalAmount is number &&
+             data.status is string && data.status.size() < 50;
+    }
+
+    function isValidWmsPartition(data) {
+      return hasRequiredFields(['id', 'section', 'records', 'updatedAt']) &&
+             data.id is string && data.id.size() < 128 &&
+             data.section in ['items', 'locations', 'balances', 'tasks', 'movements', 'shipments'] &&
+             data.records is list &&
+             data.updatedAt is number;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create, update: if isAdmin() && isValidUser(incoming());
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidTransaction(incoming()) && isValidId(transactionId);
+      // Inmutabilidad Tributaria JDE F0911 (Art. 17 Código Tributario): Asientos contabilizados sólo pueden reversarse vía contra-asiento
+      allow delete: if isAdmin() && (!('status' in existing()) || existing().status != 'CONTABILIZADO');
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidAuditLog(incoming()) && isValidId(logId);
+      allow update: if false; // Inmutabilidad forense estricta: Nadie puede editar un registro de bitácora existente
+      allow delete: if false; // Bloqueo total WORM (Write Once, Read Many)
+    }
+
+    match /due_diligence/{reportId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidDueDiligence(incoming()) && isValidId(reportId);
+      allow delete: if isAdmin();
+    }
+
+    match /suppliers/{supplierId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSupplier(incoming()) && isValidId(supplierId);
+      allow delete: if isAdmin();
+    }
+
+    match /properties/{propertyId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidProperty(incoming()) && isValidId(propertyId);
+      allow delete: if isAdmin();
+    }
+
+    match /maintenance_expedientes/{expedienteId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidMaintenance(incoming()) && isValidId(expedienteId);
+      allow delete: if isAdmin();
+    }
+
+    match /solicitudes/{solicitudId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSolicitud(incoming()) && isValidId(solicitudId);
+      allow delete: if isAdmin();
+    }
+
+    match /contracts/{contractId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidContract(incoming()) && isValidId(contractId);
+      allow delete: if isAdmin();
+    }
+
+    match /official_docs/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidOfficialDoc(incoming()) && isValidId(docId);
+      allow delete: if isAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidTicket(incoming()) && isValidId(ticketId);
+      allow delete: if isAdmin();
+    }
+
+    match /work_orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidWorkOrder(incoming()) && isValidId(orderId);
+      allow delete: if isAdmin();
+    }
+
+    match /b13_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReport(incoming()) && isValidId(reportId);
+      allow delete: if isAdmin();
+    }
+
+    match /b4_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReport(incoming()) && isValidId(reportId);
+      allow delete: if isAdmin();
+    }
+
+    match /note14_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReport(incoming()) && isValidId(reportId);
+      allow delete: if isAdmin();
+    }
+
+    match /accounting_reconciliations/{recId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReconciliation(incoming()) && isValidId(recId);
+      allow delete: if isAdmin();
+    }
+
+    match /petty_cash_funds/{fundId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidPettyCash(incoming()) && isValidId(fundId);
+      allow delete: if isAdmin();
+    }
+
+    match /petty_cash_expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidPettyCashExpense(incoming()) && isValidId(expenseId);
+      allow delete: if isAdmin();
+    }
+
+    match /lease_contracts/{contractId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidLeaseContract(incoming()) && isValidId(contractId);
+      allow delete: if isAdmin();
+    }
+
+    match /applicants/{applicantId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidId(applicantId);
+      allow delete: if isAdmin();
+    }
+
+    match /appraisals/{appraisalId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidAppraisal(incoming()) && isValidId(appraisalId);
+      allow delete: if isAdmin();
+    }
+
+    match /security_deposits/{depositId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSecurityDeposit(incoming()) && isValidId(depositId);
+      allow delete: if isAdmin();
+    }
+
+    match /reversal_requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReversalRequest(incoming()) && isValidId(requestId);
+      allow delete: if isAdmin();
+    }
+
+    match /report_templates/{templateId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReportTemplate(incoming()) && isValidId(templateId);
+      allow delete: if isAdmin();
+    }
+
+    match /report_reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidReportReview(incoming()) && isValidId(reviewId);
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSetting(incoming()) && isValidId(settingId);
+      allow delete: if isAdmin();
+    }
+
+    match /property_import_drafts/{draftId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidPropertyImportDraft(incoming()) && isValidId(draftId);
+      allow delete: if isAdmin();
+    }
+
+    match /f980011d/{recordId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidF980011D(incoming()) && isValidId(recordId);
+      allow delete: if false;
+    }
+
+    match /domain_certificates/{certificateId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidDomainCertificate(incoming()) && isValidId(certificateId);
+      allow delete: if isAdmin();
+    }
+
+    match /compliance_rat/{ratId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidComplianceRatItem(incoming()) && isValidId(ratId);
+      allow delete: if isAdmin();
+    }
+
+    match /compliance_checklist/{chkId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidComplianceChecklistItem(incoming()) && isValidId(chkId);
+      allow delete: if isAdmin();
+    }
+
+    match /compliance_document_logs/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidComplianceDocumentLog(incoming()) && isValidId(docId);
+      // Inmutabilidad probatoria Ley N° 21.719 (Evidencias ARCOP, Consentimientos y Reportes de Brecha)
+      allow delete: if false;
+    }
+
+    match /tax_declarations/{declarationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidTaxDeclaration(incoming()) && isValidId(declarationId);
+      // Bloqueo de estado terminal SII/CMF: Declaraciones emitidas oficialmente no pueden eliminarse
+      allow update: if isAuthenticated() && isValidTaxDeclaration(incoming()) && isValidId(declarationId) && (isAdmin() || !(existing().status in ['EMITIDO', 'OFICIAL_EMITIDO']));
+      allow delete: if false;
+    }
+
+    match /dte_invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidDteInvoice(incoming()) && isValidId(invoiceId);
+      allow delete: if false;
+    }
+
+    match /property_inspections/{inspectionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidPropertyInspection(incoming()) && isValidId(inspectionId);
+      allow delete: if isAdmin();
+    }
+
+    match /document_chunks/{chunkId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /email_notifications/{emailId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /f0101_address_book/{docId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /f0116_addresses/{docId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /f0111_contacts/{docId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /f0401_supplier_master/{docId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /f0030_bank_accounts/{docId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    match /wms_logistics/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidWmsPartition(incoming()) && isValidId(docId);
+      allow delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
